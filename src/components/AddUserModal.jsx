@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import { validateUserForm } from '../utils/validation';
 
-function AddUserModal({ show, handleClose, handleAdd }) {
+function AddUserModal({ show, handleClose, handleAdd, allUsers }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [location, setLocation] = useState('');
+  const [picture, setPicture] = useState('https://via.placeholder.com/150'); // תמונת ברירת מחדל
+  const [error, setError] = useState('');
+
+  const handlePictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // יצירת URL זמני לתמונה
+      setPicture(imageUrl);
+    }
+  };
+
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setLocation('');
+    setPicture('https://via.placeholder.com/150'); // החזרת תמונת ברירת המחדל
+    setError(''); // איפוס הודעת השגיאה
+  };
 
   const handleSave = () => {
-    if (!name || !email || !location) {
-      alert('All fields are required.');
-      return;
-    }
-
     const newUser = {
       login: { uuid: Date.now().toString() }, // מזהה ייחודי למשתמש החדש
       name: {
@@ -22,15 +36,24 @@ function AddUserModal({ show, handleClose, handleAdd }) {
       email,
       location: {
         city: location.split(',')[0].trim(),
-        country: location.split('')[1]?.trim() || '',
+        country: location.split(',')[1]?.trim() || '',
       },
       picture: {
-        large: 'https://via.placeholder.com/150', // תמונה ברירת מחדל
+        large: picture, // התמונה שהועלתה
       },
     };
 
+    // בדיקת תקינות
+    const validationError = validateUserForm(name, email, location, allUsers, newUser);
+    if (validationError) {
+      setError(validationError); // הצגת הודעת השגיאה
+      return;
+    }
+
+    // הוספת משתמש חדש
     handleAdd(newUser);
-    handleClose();
+    resetForm(); // איפוס הטופס
+    handleClose(); // סגירת ה-Modal
   };
 
   return (
@@ -67,7 +90,21 @@ function AddUserModal({ show, handleClose, handleAdd }) {
               onChange={(e) => setLocation(e.target.value)}
             />
           </Form.Group>
+          <Form.Group controlId="formPicture" className="mt-3">
+            <Form.Label>Picture</Form.Label>
+            <Form.Control type="file" accept="image/*" onChange={handlePictureUpload} />
+          </Form.Group>
+          {picture && (
+            <div className="mt-3 text-center">
+              <img
+                src={picture}
+                alt="Preview"
+                style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }}
+              />
+            </div>
+          )}
         </Form>
+        {error && <div className="text-danger mb-3">{error}</div>}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

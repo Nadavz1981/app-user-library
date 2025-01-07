@@ -1,29 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, Row, Col, Spinner, Container, Button } from 'react-bootstrap';
-import EditUserModal from './EditUserModal.jsx'; // ייבוא ה-Modal
+import EditUserModal from './EditUserModal.jsx';
 import AddUserModal from './AddUserModal.jsx';
 
 function UserList() {
-    const [users, setUsers] = useState([]); // רשימת המשתמשים
+    const [apiUsers, setApiUsers] = useState([]); // משתמשים מה-API בלבד
+    const [addedUsers, setAddedUsers] = useState(() => {
+        // שליפה מ-localStorage כאשר הקומפוננטה נטענת
+        const savedAddedUsers = localStorage.getItem('addedUsers');
+        return savedAddedUsers ? JSON.parse(savedAddedUsers) : [];
+    });
     const [loading, setLoading] = useState(true); // סטטוס טעינה
     const [selectedUser, setSelectedUser] = useState(null); // המשתמש שנערוך
     const [showModal, setShowModal] = useState(false); // סטטוס פתיחת ה-Modal
     const [showAddUserModal, setShowAddUserModal] = useState(false);
 
-    // טעינת נתוני משתמשים
+    // קריאה ל-API בעת טעינת הקומפוננטה
     useEffect(() => {
-        axios
-            .get('https://randomuser.me/api/?results=10')
-            .then((response) => {
-                setUsers(response.data.results); // שמירת נתונים
-                setLoading(false); // סיום טעינה
-            })
-            .catch((error) => {
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get('https://randomuser.me/api/?results=10');
+                setApiUsers(response.data.results); // שמירת משתמשים מה-API בלבד
+            } catch (error) {
                 console.error('Error fetching users:', error);
-                setLoading(false); // סיום טעינה גם במקרה של שגיאה
-            });
+            } finally {
+                setLoading(false); // סיום טעינה
+            }
+        };
+
+        fetchUsers(); // קריאה לפונקציה
     }, []);
+
+    // שמירת משתמשים שנוספו ידנית ל-localStorage בכל שינוי
+    useEffect(() => {
+        localStorage.setItem('addedUsers', JSON.stringify(addedUsers));
+    }, [addedUsers]);
 
     const handleEdit = (user) => {
         setSelectedUser(user);
@@ -36,8 +48,8 @@ function UserList() {
     };
 
     const handleSaveChanges = (updatedUser) => {
-        setUsers((prevUsers) =>
-            prevUsers.map((user) =>
+        setAddedUsers((prevAddedUsers) =>
+            prevAddedUsers.map((user) =>
                 user.login.uuid === updatedUser.login.uuid ? updatedUser : user
             )
         );
@@ -46,14 +58,14 @@ function UserList() {
 
     const handleDelete = (user) => {
         if (window.confirm(`Are you sure you want to delete ${user.name.first} ${user.name.last}?`)) {
-            setUsers((prevUsers) =>
-                prevUsers.filter((u) => u.login.uuid !== user.login.uuid)
+            setAddedUsers((prevAddedUsers) =>
+                prevAddedUsers.filter((u) => u.login.uuid !== user.login.uuid)
             );
         }
     };
 
     const handleAddUser = (newUser) => {
-        setUsers((prevUsers) => [...prevUsers, newUser]);
+        setAddedUsers((prevAddedUsers) => [...prevAddedUsers, newUser]);
     };
 
     if (loading) {
@@ -76,7 +88,7 @@ function UserList() {
                 Add User
             </Button>
             <Row>
-                {users.map((user) => (
+                {[...apiUsers, ...addedUsers].map((user) => (
                     <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
                         <Card className="shadow-lg border-0 h-100">
                             <Card.Img
@@ -115,19 +127,17 @@ function UserList() {
                 show={showAddUserModal}
                 handleClose={() => setShowAddUserModal(false)}
                 handleAdd={handleAddUser}
+                allUsers={[...apiUsers, ...addedUsers]} // כל המשתמשים
             />
 
-            {/* ה-Modal */}
             {selectedUser && (
                 <EditUserModal
                     show={showModal}
                     handleClose={handleCloseModal}
                     user={selectedUser}
                     handleSave={handleSaveChanges}
-                    allUsers={users}
+                    allUsers={[...apiUsers, ...addedUsers]}
                 />
-
-
             )}
         </Container>
     );
