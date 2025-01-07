@@ -58,28 +58,31 @@ function UserList() {
             <Row>
                 {users.map((user) => (
                     <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
-                        <Card className="shadow-lg border-0">
+                        <Card className="shadow-lg border-0 h-100">
                             <Card.Img
                                 variant="top"
                                 src={user.picture.large}
                                 alt={`${user.name.first} ${user.name.last}`}
                                 style={{ borderRadius: '10px 10px 0 0', maxHeight: '200px', objectFit: 'cover' }}
                             />
-                            <Card.Body className="text-center">
-                                <Card.Title>
+                            <Card.Body className="d-flex flex-column justify-content-between text-center">
+                                <Card.Title className="mb-3">
                                     {user.name.title} {user.name.first} {user.name.last}
                                 </Card.Title>
-                                <Card.Text className="text-muted">
-                                    <strong>Email:</strong>
-                                    <span style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-                                        {user.email}
-                                    </span>
+                                <Card.Text className="text-muted mb-3">
+                                    <strong>Email:</strong> {user.email} <br />
                                     <strong>Location:</strong> {user.location.city}, {user.location.country}
                                 </Card.Text>
-                                <Button variant="primary" onClick={() => handleEdit(user)}>
-                                    Edit
-                                </Button>
+                                <div className="mt-auto">
+                                    <Button variant="primary" className="me-2" onClick={() => handleEdit(user)}>
+                                        Edit
+                                    </Button>
+                                    <Button variant="danger" onClick={() => handleDelete(user)}>
+                                        Delete
+                                    </Button>
+                                </div>
                             </Card.Body>
+
                             <Card.Footer className="text-center bg-light">
                                 <small className="text-muted">UUID: {user.login.uuid}</small>
                             </Card.Footer>
@@ -87,16 +90,16 @@ function UserList() {
                     </Col>
                 ))}
             </Row>
-            
+
             {/* ה-Modal */}
             {selectedUser && (
                 <EditUserModal
-                show={showModal}
-                handleClose={handleCloseModal}
-                user={selectedUser}
-                handleSave={handleSaveChanges}
-                allUsers={users}
-            />
+                    show={showModal}
+                    handleClose={handleCloseModal}
+                    user={selectedUser}
+                    handleSave={handleSaveChanges}
+                    allUsers={users}
+                />
 
             )}
         </Container>
