@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, Row, Col, Spinner, Container } from 'react-bootstrap';
+import { Card, Row, Col, Spinner, Container, Button } from 'react-bootstrap';
 
 function UserList() {
   const [users, setUsers] = useState([]); // רשימת המשתמשים
@@ -50,6 +50,7 @@ function UserList() {
                   <strong>Email:</strong> {user.email} <br />
                   <strong>Location:</strong> {user.location.city}, {user.location.country}
                 </Card.Text>
+                <Button variant="primary">Edit</Button>
               </Card.Body>
               <Card.Footer className="text-center bg-light">
                 <small className="text-muted">UUID: {user.login.uuid}</small>
