@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, Row, Col, Spinner, Container, Button } from 'react-bootstrap';
 import EditUserModal from './EditUserModal.jsx'; // ייבוא ה-Modal
+import AddUserModal from './AddUserModal.jsx';
 
 function UserList() {
     const [users, setUsers] = useState([]); // רשימת המשתמשים
     const [loading, setLoading] = useState(true); // סטטוס טעינה
     const [selectedUser, setSelectedUser] = useState(null); // המשתמש שנערוך
     const [showModal, setShowModal] = useState(false); // סטטוס פתיחת ה-Modal
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
 
     // טעינת נתוני משתמשים
     useEffect(() => {
@@ -42,6 +44,17 @@ function UserList() {
         setShowModal(false); // סגירת ה-Modal
     };
 
+    const handleDelete = (user) => {
+        if (window.confirm(`Are you sure you want to delete ${user.name.first} ${user.name.last}?`)) {
+            setUsers((prevUsers) =>
+                prevUsers.filter((u) => u.login.uuid !== user.login.uuid)
+            );
+        }
+    };
+
+    const handleAddUser = (newUser) => {
+        setUsers((prevUsers) => [...prevUsers, newUser]);
+    };
 
     if (loading) {
         return (
@@ -55,6 +68,13 @@ function UserList() {
 
     return (
         <Container className="mt-4">
+            <Button
+                variant="success"
+                className="mb-4"
+                onClick={() => setShowAddUserModal(true)}
+            >
+                Add User
+            </Button>
             <Row>
                 {users.map((user) => (
                     <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
@@ -91,6 +111,12 @@ function UserList() {
                 ))}
             </Row>
 
+            <AddUserModal
+                show={showAddUserModal}
+                handleClose={() => setShowAddUserModal(false)}
+                handleAdd={handleAddUser}
+            />
+
             {/* ה-Modal */}
             {selectedUser && (
                 <EditUserModal
@@ -100,6 +126,7 @@ function UserList() {
                     handleSave={handleSaveChanges}
                     allUsers={users}
                 />
+
 
             )}
         </Container>
