@@ -56,8 +56,13 @@ function AddUserModal({ show, handleClose, handleAdd, allUsers }) {
     handleClose(); // סגירת ה-Modal
   };
 
+  const handleCloseModal = () => {
+    resetForm(); // איפוס כל השדות בטופס
+    handleClose(); // סגירת ה-Modal
+  };
+
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleCloseModal}>
       <Modal.Header closeButton>
         <Modal.Title>Add User</Modal.Title>
       </Modal.Header>
@@ -107,7 +112,7 @@ function AddUserModal({ show, handleClose, handleAdd, allUsers }) {
         {error && <div className="text-danger mb-3">{error}</div>}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={handleCloseModal}>
           Cancel
         </Button>
         <Button variant="success" onClick={handleSave}>
