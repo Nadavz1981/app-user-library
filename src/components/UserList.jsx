@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Card, Row, Col, Spinner, Container, Button } from 'react-bootstrap';
 import EditUserModal from './EditUserModal.jsx';
 import AddUserModal from './AddUserModal.jsx';
+import SearchBar from './SearchBar.jsx';
 
 function UserList() {
     const [apiUsers, setApiUsers] = useState([]); // משתמשים מה-API בלבד
@@ -14,6 +15,7 @@ function UserList() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -33,6 +35,10 @@ function UserList() {
     useEffect(() => {
         localStorage.setItem('addedUsers', JSON.stringify(addedUsers));
     }, [addedUsers]);
+
+    const handleSearch = (term) => {
+        setSearchTerm(term.toLowerCase());
+    };
 
     const handleEdit = (user) => {
         setSelectedUser(user);
@@ -73,6 +79,16 @@ function UserList() {
         setAddedUsers((prevAddedUsers) => [...prevAddedUsers, newUser]);
     };
 
+    const filteredUsers = [...apiUsers, ...addedUsers].filter((user) => {
+        const fullName = `${user.name.first} ${user.name.last}`.toLowerCase();
+        return (
+            fullName.includes(searchTerm) ||
+            user.email.toLowerCase().includes(searchTerm) ||
+            user.location.city.toLowerCase().includes(searchTerm) ||
+            user.login.uuid.toLowerCase().includes(searchTerm)
+        );
+    });
+
     if (loading) {
         return (
             <div className="text-center">
@@ -98,6 +114,7 @@ function UserList() {
             >
                 User Library App
             </header>
+            <SearchBar onSearch={handleSearch} /> 
             <Button
                 variant="success"
                 className="mb-4"
@@ -114,62 +131,56 @@ function UserList() {
                 Add User
             </Button>
             <Row>
-                {[...apiUsers, ...addedUsers].map((user) => (
-                    <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
-                        <Card
-                            className="shadow-lg border-0 h-100"
-                            style={{
-                                borderRadius: '15px',
-                                overflow: 'hidden',
-                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                            }}
+    {filteredUsers.map((user) => (
+        <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
+            <Card className="shadow-lg border-0 h-100">
+                <Card.Img
+                    variant="top"
+                    src={user.picture.large}
+                    alt={`${user.name.first} ${user.name.last}`}
+                    style={{
+                        borderRadius: '50%',
+                        maxWidth: '120px',
+                        maxHeight: '120px',
+                        objectFit: 'cover',
+                        margin: '15px auto',
+                    }}
+                />
+                <Card.Body style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>
+                    <Card.Title className="mb-3">
+                        {user.name.title} {user.name.first} {user.name.last}
+                    </Card.Title>
+                    <Card.Text className="text-muted mb-3">
+                        <strong>Email:</strong> {user.email} <br />
+                        <strong>Location:</strong> {user.location.city}, {user.location.country}
+                    </Card.Text>
+                    <div className="mt-auto">
+                        <Button
+                            variant="primary"
+                            className="me-2"
+                            style={{ borderRadius: '20px' }}
+                            onClick={() => handleEdit(user)}
                         >
-                            <Card.Img
-                                variant="top"
-                                src={user.picture.large}
-                                alt={`${user.name.first} ${user.name.last}`}
-                                style={{
-                                    borderRadius: '50%',
-                                    maxWidth: '120px',
-                                    maxHeight: '120px',
-                                    objectFit: 'cover',
-                                    margin: '15px auto',
-                                }}
-                            />
-                            <Card.Body style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>
-                                <Card.Title className="mb-3">
-                                    {user.name.title} {user.name.first} {user.name.last}
-                                </Card.Title>
-                                <Card.Text className="text-muted mb-3">
-                                    <strong>Email:</strong> {user.email} <br />
-                                    <strong>Location:</strong> {user.location.city}, {user.location.country}
-                                </Card.Text>
-                                <div className="mt-auto">
-                                    <Button
-                                        variant="primary"
-                                        className="me-2"
-                                        style={{ borderRadius: '20px' }}
-                                        onClick={() => handleEdit(user)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        style={{ borderRadius: '20px' }}
-                                        onClick={() => handleDelete(user)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
-                            </Card.Body>
+                            Edit
+                        </Button>
+                        <Button
+                            variant="danger"
+                            style={{ borderRadius: '20px' }}
+                            onClick={() => handleDelete(user)}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+                </Card.Body>
 
-                            <Card.Footer className="text-center bg-light">
-                                <small className="text-muted">UUID: {user.login.uuid}</small>
-                            </Card.Footer>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
+                <Card.Footer className="text-center bg-light">
+                    <small className="text-muted">UUID: {user.login.uuid}</small>
+                </Card.Footer>
+            </Card>
+        </Col>
+    ))}
+</Row>
+
 
             <AddUserModal
                 show={showAddUserModal}
