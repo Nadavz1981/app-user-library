@@ -51,13 +51,25 @@ function UserList() {
     };
 
     const handleSaveChanges = (updatedUser) => {
-        setAddedUsers((prevAddedUsers) =>
-            prevAddedUsers.map((user) =>
-                user.login.uuid === updatedUser.login.uuid ? updatedUser : user
-            )
-        );
-        setShowModal(false);
+        if (apiUsers.some((user) => user.login.uuid === updatedUser.login.uuid)) {
+            // עדכון המשתמש ב-apiUsers אם הוא שייך לשם
+            setApiUsers((prevApiUsers) =>
+                prevApiUsers.map((user) =>
+                    user.login.uuid === updatedUser.login.uuid ? updatedUser : user
+                )
+            );
+        } else {
+            // עדכון המשתמש ב-addedUsers אם הוא שייך לשם
+            setAddedUsers((prevAddedUsers) =>
+                prevAddedUsers.map((user) =>
+                    user.login.uuid === updatedUser.login.uuid ? updatedUser : user
+                )
+            );
+        }
+        setShowModal(false); // סגירת ה-Modal
+        setSelectedUser(null); // איפוס המשתמש שנבחר
     };
+    
 
     const handleDelete = (user) => {
         if (window.confirm(`Are you sure you want to delete ${user.name.first} ${user.name.last}?`)) {

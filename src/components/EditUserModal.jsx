@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { validateUserForm } from '../utils/validation'; // ייבוא הוולידציה
 
 function EditUserModal({ show, handleClose, user, handleSave, allUsers }) {
-  const [name, setName] = useState(`${user.name.title} ${user.name.first} ${user.name.last}`);
-  const [email, setEmail] = useState(user.email);
-  const [location, setLocation] = useState(`${user.location.city}, ${user.location.country}`);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [location, setLocation] = useState('');
   const [error, setError] = useState(''); // הודעת שגיאה
+
+  // עדכון ה-state בכל פעם שמשתמש חדש נשלח ל-Modal
+  useEffect(() => {
+    if (user) {
+      setName(`${user.name.title} ${user.name.first} ${user.name.last}`);
+      setEmail(user.email);
+      setLocation(`${user.location.city}, ${user.location.country}`);
+      setError(''); // איפוס הודעות השגיאה
+    }
+  }, [user]);
 
   const handleSaveChanges = () => {
     const errorMessage = validateUserForm(name, email, location, allUsers, user);
@@ -19,18 +29,19 @@ function EditUserModal({ show, handleClose, user, handleSave, allUsers }) {
       ...user,
       name: {
         ...user.name,
-        title: name.split(' ')[0],
-        first: name.split(' ')[1],
-        last: name.split(' ')[2],
+        title: name.split(' ')[0] || '',
+        first: name.split(' ')[1] || '',
+        last: name.split(' ')[2] || '',
       },
       email,
       location: {
         ...user.location,
-        city: location.split(',')[0].trim(),
-        country: location.split(',')[1].trim(),
+        city: location.split(',')[0]?.trim() || '',
+        country: location.split(',')[1]?.trim() || '',
       },
     };
     handleSave(updatedUser);
+    handleClose(); // סגור את ה-Modal לאחר השמירה
   };
 
   return (
