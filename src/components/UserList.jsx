@@ -7,32 +7,29 @@ import AddUserModal from './AddUserModal.jsx';
 function UserList() {
     const [apiUsers, setApiUsers] = useState([]); // משתמשים מה-API בלבד
     const [addedUsers, setAddedUsers] = useState(() => {
-        // שליפה מ-localStorage כאשר הקומפוננטה נטענת
         const savedAddedUsers = localStorage.getItem('addedUsers');
         return savedAddedUsers ? JSON.parse(savedAddedUsers) : [];
     });
-    const [loading, setLoading] = useState(true); // סטטוס טעינה
-    const [selectedUser, setSelectedUser] = useState(null); // המשתמש שנערוך
-    const [showModal, setShowModal] = useState(false); // סטטוס פתיחת ה-Modal
+    const [loading, setLoading] = useState(true);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showModal, setShowModal] = useState(false);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
 
-    // קריאה ל-API בעת טעינת הקומפוננטה
     useEffect(() => {
         const fetchUsers = async () => {
             try {
                 const response = await axios.get('https://randomuser.me/api/?results=10');
-                setApiUsers(response.data.results); // שמירת משתמשים מה-API בלבד
+                setApiUsers(response.data.results);
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
-                setLoading(false); // סיום טעינה
+                setLoading(false);
             }
         };
 
-        fetchUsers(); // קריאה לפונקציה
+        fetchUsers();
     }, []);
 
-    // שמירת משתמשים שנוספו ידנית ל-localStorage בכל שינוי
     useEffect(() => {
         localStorage.setItem('addedUsers', JSON.stringify(addedUsers));
     }, [addedUsers]);
@@ -53,16 +50,24 @@ function UserList() {
                 user.login.uuid === updatedUser.login.uuid ? updatedUser : user
             )
         );
-        setShowModal(false); // סגירת ה-Modal
+        setShowModal(false);
     };
 
     const handleDelete = (user) => {
         if (window.confirm(`Are you sure you want to delete ${user.name.first} ${user.name.last}?`)) {
-            setAddedUsers((prevAddedUsers) =>
-                prevAddedUsers.filter((u) => u.login.uuid !== user.login.uuid)
-            );
+            // בדיקת מקור המשתמש (API או משתמש שהוסף ידנית)
+            if (apiUsers.some((u) => u.login.uuid === user.login.uuid)) {
+                setApiUsers((prevApiUsers) =>
+                    prevApiUsers.filter((u) => u.login.uuid !== user.login.uuid)
+                );
+            } else {
+                setAddedUsers((prevAddedUsers) =>
+                    prevAddedUsers.filter((u) => u.login.uuid !== user.login.uuid)
+                );
+            }
         }
     };
+    
 
     const handleAddUser = (newUser) => {
         setAddedUsers((prevAddedUsers) => [...prevAddedUsers, newUser]);
@@ -80,9 +85,30 @@ function UserList() {
 
     return (
         <Container className="mt-4">
+            <header
+                style={{
+                    backgroundColor: '#343a40',
+                    color: '#fff',
+                    padding: '10px 0',
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    marginBottom: '20px',
+                    borderRadius: '10px',
+                }}
+            >
+                User Library App
+            </header>
             <Button
                 variant="success"
                 className="mb-4"
+                style={{
+                    backgroundColor: '#28a745',
+                    borderColor: '#28a745',
+                    fontSize: '1.2rem',
+                    padding: '10px 20px',
+                    borderRadius: '30px',
+                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+                }}
                 onClick={() => setShowAddUserModal(true)}
             >
                 Add User
@@ -90,14 +116,27 @@ function UserList() {
             <Row>
                 {[...apiUsers, ...addedUsers].map((user) => (
                     <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
-                        <Card className="shadow-lg border-0 h-100">
+                        <Card
+                            className="shadow-lg border-0 h-100"
+                            style={{
+                                borderRadius: '15px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                            }}
+                        >
                             <Card.Img
                                 variant="top"
                                 src={user.picture.large}
                                 alt={`${user.name.first} ${user.name.last}`}
-                                style={{ borderRadius: '10px 10px 0 0', maxHeight: '200px', objectFit: 'cover' }}
+                                style={{
+                                    borderRadius: '50%',
+                                    maxWidth: '120px',
+                                    maxHeight: '120px',
+                                    objectFit: 'cover',
+                                    margin: '15px auto',
+                                }}
                             />
-                            <Card.Body className="d-flex flex-column justify-content-between text-center">
+                            <Card.Body style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>
                                 <Card.Title className="mb-3">
                                     {user.name.title} {user.name.first} {user.name.last}
                                 </Card.Title>
@@ -106,10 +145,19 @@ function UserList() {
                                     <strong>Location:</strong> {user.location.city}, {user.location.country}
                                 </Card.Text>
                                 <div className="mt-auto">
-                                    <Button variant="primary" className="me-2" onClick={() => handleEdit(user)}>
+                                    <Button
+                                        variant="primary"
+                                        className="me-2"
+                                        style={{ borderRadius: '20px' }}
+                                        onClick={() => handleEdit(user)}
+                                    >
                                         Edit
                                     </Button>
-                                    <Button variant="danger" onClick={() => handleDelete(user)}>
+                                    <Button
+                                        variant="danger"
+                                        style={{ borderRadius: '20px' }}
+                                        onClick={() => handleDelete(user)}
+                                    >
                                         Delete
                                     </Button>
                                 </div>
@@ -127,7 +175,7 @@ function UserList() {
                 show={showAddUserModal}
                 handleClose={() => setShowAddUserModal(false)}
                 handleAdd={handleAddUser}
-                allUsers={[...apiUsers, ...addedUsers]} // כל המשתמשים
+                allUsers={[...apiUsers, ...addedUsers]}
             />
 
             {selectedUser && (
