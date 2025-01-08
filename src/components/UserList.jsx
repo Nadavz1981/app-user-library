@@ -73,7 +73,7 @@ function UserList() {
             }
         }
     };
-    
+
 
     const handleAddUser = (newUser) => {
         setAddedUsers((prevAddedUsers) => [...prevAddedUsers, newUser]);
@@ -101,85 +101,99 @@ function UserList() {
 
     return (
         <Container className="mt-4">
-            <header
+            <nav
                 style={{
                     backgroundColor: '#343a40',
-                    color: '#fff',
-                    padding: '10px 0',
-                    textAlign: 'center',
-                    fontSize: '1.5rem',
+                    padding: '0 20px',
+                    borderRadius: '8px',
                     marginBottom: '20px',
-                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center', // יישור אנכי של האלמנטים
+                    justifyContent: 'space-between', // ריווח בין הכותרת לשורת החיפוש
+                    height: '70px', // קביעת גובה קבוע ל-Navbar
                 }}
             >
-                User Library App
-            </header>
-            <SearchBar onSearch={handleSearch} /> 
-            <Button
-                variant="success"
-                className="mb-4"
-                style={{
-                    backgroundColor: '#28a745',
-                    borderColor: '#28a745',
-                    fontSize: '1.2rem',
-                    padding: '10px 20px',
-                    borderRadius: '30px',
-                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
-                }}
-                onClick={() => setShowAddUserModal(true)}
-            >
-                Add User
-            </Button>
-            <Row>
-    {filteredUsers.map((user) => (
-        <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
-            <Card className="shadow-lg border-0 h-100">
-                <Card.Img
-                    variant="top"
-                    src={user.picture.large}
-                    alt={`${user.name.first} ${user.name.last}`}
-                    style={{
-                        borderRadius: '50%',
-                        maxWidth: '120px',
-                        maxHeight: '120px',
-                        objectFit: 'cover',
-                        margin: '15px auto',
-                    }}
-                />
-                <Card.Body style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>
-                    <Card.Title className="mb-3">
-                        {user.name.title} {user.name.first} {user.name.last}
-                    </Card.Title>
-                    <Card.Text className="text-muted mb-3">
-                        <strong>Email:</strong> {user.email} <br />
-                        <strong>Location:</strong> {user.location.city}, {user.location.country}
-                    </Card.Text>
-                    <div className="mt-auto">
-                        <Button
-                            variant="primary"
-                            className="me-2"
-                            style={{ borderRadius: '20px' }}
-                            onClick={() => handleEdit(user)}
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            variant="danger"
-                            style={{ borderRadius: '20px' }}
-                            onClick={() => handleDelete(user)}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                </Card.Body>
+                <h1 style={{ color: '#fff', margin: 0, fontSize: '1.5rem' }}>User Library App</h1>
+                <div style={{marginTop: 25, width: '100%', maxWidth: '300px' }}>
+                    <SearchBar onSearch={handleSearch} />
+                </div>
+            </nav>
 
-                <Card.Footer className="text-center bg-light">
-                    <small className="text-muted">UUID: {user.login.uuid}</small>
-                </Card.Footer>
-            </Card>
-        </Col>
-    ))}
-</Row>
+
+            <div className="d-flex justify-content-center mb-4">
+                <Button
+                    variant="success"
+                    style={{
+                        backgroundColor: '#28a745',
+                        borderColor: '#28a745',
+                        fontSize: '1.2rem',
+                        padding: '10px 20px',
+                        borderRadius: '30px',
+                        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+                    }}
+                    onClick={() => setShowAddUserModal(true)}
+                >
+                    Add User
+                </Button>
+            </div>
+            <Row>
+                {filteredUsers.map((user) => (
+                    <Col md={4} lg={3} sm={6} xs={12} key={user.login.uuid} className="mb-4">
+                        <Card
+                            className="shadow-lg border-0 h-100"
+                            style={{
+                                borderRadius: '15px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                            }}
+                        >
+                            <Card.Img
+                                variant="top"
+                                src={user.picture.large}
+                                alt={`${user.name.first} ${user.name.last}`}
+                                style={{
+                                    borderRadius: '50%',
+                                    maxWidth: '120px',
+                                    maxHeight: '120px',
+                                    objectFit: 'cover',
+                                    margin: '15px auto',
+                                }}
+                            />
+                            <Card.Body style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>
+                                <Card.Title className="mb-3">
+                                    {user.name.title} {user.name.first} {user.name.last}
+                                </Card.Title>
+                                <Card.Text className="text-muted mb-3">
+                                    <strong>Email:</strong> {user.email} <br />
+                                    <strong>Location:</strong> {user.location.city}, {user.location.country}
+                                </Card.Text>
+                                <div className="mt-auto">
+                                    <Button
+                                        variant="primary"
+                                        className="me-2"
+                                        style={{ borderRadius: '20px' }}
+                                        onClick={() => handleEdit(user)}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        style={{ borderRadius: '20px' }}
+                                        onClick={() => handleDelete(user)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            </Card.Body>
+
+                            <Card.Footer className="text-center bg-light">
+                                <small className="text-muted">UUID: {user.login.uuid}</small>
+                            </Card.Footer>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
 
 
             <AddUserModal
