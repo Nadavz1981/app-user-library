@@ -20,18 +20,25 @@ function UserList() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get('https://randomuser.me/api/?results=10');
-                setApiUsers(response.data.results);
+                const savedApiUsers = localStorage.getItem('apiUsers');
+                if (savedApiUsers) {
+                    setApiUsers(JSON.parse(savedApiUsers));
+                } else {
+                    const response = await axios.get('https://randomuser.me/api/?results=10');
+                    setApiUsers(response.data.results);
+                    localStorage.setItem('apiUsers', JSON.stringify(response.data.results));
+                }
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
                 setLoading(false);
             }
         };
-
+    
         fetchUsers();
     }, []);
-
+    
+    
     useEffect(() => {
         localStorage.setItem('addedUsers', JSON.stringify(addedUsers));
     }, [addedUsers]);
@@ -73,18 +80,24 @@ function UserList() {
 
     const handleDelete = (user) => {
         if (window.confirm(`Are you sure you want to delete ${user.name.first} ${user.name.last}?`)) {
-            // בדיקת מקור המשתמש (API או משתמש שהוסף ידנית)
             if (apiUsers.some((u) => u.login.uuid === user.login.uuid)) {
-                setApiUsers((prevApiUsers) =>
-                    prevApiUsers.filter((u) => u.login.uuid !== user.login.uuid)
-                );
+                // מחיקה של משתמשים מ-API
+                setApiUsers((prevApiUsers) => {
+                    const updatedApiUsers = prevApiUsers.filter((u) => u.login.uuid !== user.login.uuid);
+                    localStorage.setItem('apiUsers', JSON.stringify(updatedApiUsers)); // עדכון localStorage
+                    return updatedApiUsers;
+                });
             } else {
-                setAddedUsers((prevAddedUsers) =>
-                    prevAddedUsers.filter((u) => u.login.uuid !== user.login.uuid)
-                );
+                // מחיקה של משתמשים שהוספו ידנית
+                setAddedUsers((prevAddedUsers) => {
+                    const updatedAddedUsers = prevAddedUsers.filter((u) => u.login.uuid !== user.login.uuid);
+                    localStorage.setItem('addedUsers', JSON.stringify(updatedAddedUsers)); // עדכון localStorage
+                    return updatedAddedUsers;
+                });
             }
         }
     };
+    
 
 
     const handleAddUser = (newUser) => {
